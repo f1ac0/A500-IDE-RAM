@@ -1,134 +1,76 @@
 
+module ram_autoconfig(
+	input [23:16] AH,
+	input [6:1] AL,
+	input [15:13] D_i,
+	input _RST,
+	input _UDS,
+	input RW,
+	input _configin,
+	output _configout,
+	output [15:12] D_o,
+	output autoconfig_oe,
+//	output OVR, //positive logic here !
+	output DTACK, //positive logic here !
+	output ram1ce
+//	output ram2ce
+	);
 
-module ram_autoconfig( cpu_a21,cpu_a22,cpu_a23,
-                 cpu_a1, cpu_a2, cpu_a3, cpu_a4, cpu_a5, cpu_a6,
-                 cpu_a16,cpu_a17,cpu_a18,cpu_a19,cpu_a20,
-                 cpu_d12,cpu_d13,cpu_d14,cpu_d15,
-                 cpu_nas,cpu_nlds,cpu_nuds,cpu_clk,
-                 cpu_nreset,
-					  ramce,ramce2,
-					  ram_d_OE
-               );
-
-	input cpu_a21,cpu_a22,cpu_a23; // cpu high addresses
-
-	input cpu_a1, cpu_a2, cpu_a3, cpu_a4, cpu_a5, cpu_a6; // cpu low addresses for autoconfig
-	input cpu_a16,cpu_a17,cpu_a18,cpu_a19,cpu_a20; // cpu high addresses for autoconfig
-
-	output cpu_d12,cpu_d13,cpu_d14,cpu_d15; // autoconfig data in-out
-
-	input cpu_nas,cpu_nlds,cpu_nuds; // cpu bus control signals
-	input cpu_clk; // cpu clock
-
-	input cpu_nreset; // cpu system reset
-
-	output ramce,ramce2;
 	
-	output ram_d_OE;
+//autoconfig
+   reg configured = 1'b0;
+   reg shutup = 1'b0;
+	reg [23:21] base_address;
+   wire autoconfig_access = (AH[23:16] == 8'hE8) & !configured & !shutup & !_configin; //accessing autoconfig space
+   wire autoconfig_read = autoconfig_access & RW;
+	wire autoconfig_write = autoconfig_access & !RW;
+	reg  [3:0] autoconfig_d;
 
-	reg  [3:0] datout; // data out
-
-	wire [7:0] high_addr;
-	wire [5:0] low_addr;
-
-assign cpu_d12 = datout[0];
-assign cpu_d13 = datout[1];
-assign cpu_d14 = datout[2];
-assign cpu_d15 = datout[3];
-
-assign ramce = cpu_a21 & !cpu_a22 & !cpu_a23; //Lower 2MB chip
-assign ramce2 = !cpu_a21 & cpu_a22 & !cpu_a23; //Upper 2MB chip
-
-	reg read_cycle; // if current cycle is read cycle
-	reg write_cycle;
-	reg autoconf_on;
-	reg cpu_nas_z; // cpu /AS with 1 clock latency
-
-	assign high_addr = {cpu_a23,cpu_a22,cpu_a21,cpu_a20,cpu_a19,cpu_a18,cpu_a17,cpu_a16};
-	assign low_addr  = {cpu_a6,cpu_a5,cpu_a4,cpu_a3,cpu_a2,cpu_a1};
-
-
-	// make clocked cpu_nas_z
-	always @(posedge cpu_clk)
-	begin
-		cpu_nas_z <= cpu_nas;
-	end
-
-	// detect if current cycle is read or write cycle
-	always @(posedge cpu_clk, posedge cpu_nas)
-	begin
-		if( cpu_nas==1 ) // async reset on end of /AS strobe
-		begin
-			read_cycle  <= 0; // end of cycles
-			write_cycle <= 0;
+always @(negedge _UDS or negedge _RST) begin
+	if (!_RST) begin
+		configured <= 1'b0;
+		shutup <= 1'b0;
+	end else begin
+		if (autoconfig_write) begin
+			case ( AL[6:1] )
+				'h24: begin // $48-4b : Base address register
+						base_address[23:21] <= D_i[15:13];
+						configured <= 1'b1;
+					end
+				//'h25: base_address[3:0] <= D[15:12]; // $4a  : Base address register
+				'h26: shutup <= 1'b1; // $4c-4f : Optional "shut up" address
+			endcase
 		end
-		else // sync beginning of cycle
-		begin
-			if( cpu_nas==0 && cpu_nas_z==1 ) // beginning of /AS strobe
-			begin
-				if( (cpu_nlds&cpu_nuds)==0 )
-					read_cycle <= 1;
-				else
-					write_cycle <= 1;
-			end
-		end
-	end
 
-	// autoconfig data forming
-	always @*
-	begin
-		case( low_addr )
-		6'b000000: // $00
-			datout <= 4'b1110;
-		6'b000001: // $02
-			datout <= 4'b0110; // 0110 for 2MB, 0111 for 4MB, 0000 for 8MB
-
-		6'b000010: // $04
-			datout <= 4'hE;
-		6'b000011: // $06
-			datout <= 4'hE;
-
-		6'b000100: // $08
-			datout <= 4'h3;
-		6'b000101: // $0a
-			datout <= 4'hF;
-
-		6'b001000: // $10
-			datout <= 4'hE;
-		6'b001001: // $12
-			datout <= 4'hE;
-
-		6'b001010: // $14
-			datout <= 4'hE;
-		6'b001011: // $16
-			datout <= 4'hE;
-
-		6'b100000: // $40
-			datout <= 4'b0000;
-		6'b100001: // $42
-			datout <= 4'b0000;
-
-		default:
-			datout <= 4'b1111;
+		case ( AL[6:1] )
+			'h00: autoconfig_d <= 4'b1110; // $00 : Current style board, load into memory free list
+			'h01: autoconfig_d <= 4'b0110; // $02 : 0110 for 2MB, 0111 for 4MB, 0000 for 8MB
+			'h02: autoconfig_d <= 4'hE; // $04 : Product number
+			'h03: autoconfig_d <= 4'hE; // $06 : Product number
+			'h04: autoconfig_d <= 4'h3; // $08 : Can be shut up, in 8Meg space
+//			'h0a: autoconfig_d <= 4'hF; // $0a : reserved
+			'h08: autoconfig_d <= 4'hE; // $10 : Mfg # high byte
+			'h09: autoconfig_d <= 4'hE; // $12 : Mfg # high byte
+			'h0a: autoconfig_d <= 4'hE; // $14 : Mfg # low byte
+			'h0b: autoconfig_d <= 4'hE; // $16 : Mfg # low byte
+//			'h11: autoconfig_d <= 4'he; // $22 : serial number
+//			'h12: autoconfig_d <= 4'hb; // $24 : serial number
+//			'h13: autoconfig_d <= 4'h7; // $26 : serial number
+			'h20: autoconfig_d <= 4'h0; // $40 : Control status register
+			'h21: autoconfig_d <= 4'h0; // $42 : Control status register
+			default: autoconfig_d <= 4'hF;
 		endcase
 	end
 
-	// out autoconfig data
-	assign ram_d_OE = read_cycle==1 && high_addr==8'hE8 && autoconf_on==1;
+end
 
-
-	// autoconfig cycle on/off
-	always @(posedge write_cycle,negedge cpu_nreset)
-	begin
-		if( cpu_nreset==0 ) // reset - begin autoconf
-			autoconf_on <= 1;
-		else
-		begin
-			if( high_addr==8'hE8 && low_addr[5:2]==4'b1001 ) // $E80048..$E8004E
-				autoconf_on <= 0;
-		end
-	end
-
-
+//response from our device
+	assign D_o[15:12] = autoconfig_d[3:0]; //autoconfig data
+	assign autoconfig_oe = autoconfig_read;
+	assign _configout = !(configured | shutup);
+	assign ram1ce = configured & (AH[23:21]==base_address[23:21]); //Lower 2MB chip // ==3'b001
+//	assign ram2ce = 1'b0; //configured & (AH[23:21]==3'b010); //Upper 2MB chip
+//	assign OVR = 1'b0; //ram1ce;  //chipset override, positive logic here !
+	assign DTACK = autoconfig_access | ram1ce; // | ram2ce;
 
 endmodule
