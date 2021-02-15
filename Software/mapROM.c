@@ -65,9 +65,9 @@ int main(int argc, char **argv)
         exit(RETURN_FAIL);
     }
         
-    while ((argc > 1) && (argv[1][0] == '-'))
+    while (argc > 1)
     {
-        switch (argv[1][1])
+        if(argv[1][0] == '-') switch (argv[1][1])
         {
             case 'v':
             case 'V':
