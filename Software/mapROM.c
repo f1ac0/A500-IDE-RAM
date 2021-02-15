@@ -91,14 +91,6 @@ int main(int argc, char **argv)
             case 'R':
             {
                 ColdReboot();
-/*
-__asm(" \n\
-\tcnop 0,4\n\
-\tlea 2.l,a0\n\
-\treset\n\
-\tjmp (a0)\n\
-")
-*/
             }
             break;
 
@@ -110,7 +102,7 @@ __asm(" \n\
                     printf("Done, MapROM will be removed at next reboot\n");
                 } else {
                     printf("MapROM is already NOT active\n");
-                    exit(RETURN_FAIL);
+                    exit(RETURN_WARN);
                 }
             }
             break;
@@ -120,7 +112,7 @@ __asm(" \n\
             {
                 if( (*controlAddress) & 0x80 ) {
                     printf("MapROM is ACTIVE\n");
-                    exit(RETURN_FAIL);
+                    exit(RETURN_WARN);
                 } else
                     printf("MapROM is NOT active\n");
             }
@@ -131,7 +123,7 @@ __asm(" \n\
             {
                 if( (*controlAddress) & 0x80 ) {
                     printf("MapROM is already active\n");
-                    exit(RETURN_FAIL);
+                    exit(RETURN_ERROR);
                 }
 
                 APTR sourceAddress, destinationAddress;
@@ -164,7 +156,7 @@ __asm(" \n\
             {
                 if( (*controlAddress) & 0x80 ) {
                     printf("MapROM is already active\n");
-                    exit(RETURN_FAIL);
+                    exit(RETURN_ERROR);
                 }
 
                 if ((argc > 2) && argv[2])
