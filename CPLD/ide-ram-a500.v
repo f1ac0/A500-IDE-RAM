@@ -18,7 +18,8 @@
 //
 // ide68k license is unknown ; OpenAmiga500FastRamExpansion is CERN OHL 1.2
 // 
-`define RAM_AUTOCONFIG 1
+`define RAM_COMBO 1
+//`define RAM_AUTOCONFIG 1
 //`define RAM_AUTOCONFIG_ORIGINAL 1
 //`define RAM_RANGER_MAPROM 1
 //`define RAM_NONE 1
@@ -48,6 +49,7 @@ module ide_ram_a500(
 	output ndtack2,
 	output _ovr,
 	output _ovr2,
+	output _ovr3,
 	output nint2,
 	output nint2_2,
 	output led,
@@ -73,6 +75,25 @@ module ide_ram_a500(
 	wire _configout;
 	assign ram2ce=1'b0;
 	
+`ifdef RAM_COMBO
+	//ram selectable autoconfig or ranger+maprom
+	ram_combo ram(
+		AH[23:12],
+		AL[6:1],
+		D[15:13],
+		nreset,
+		nuds,
+		r_w,
+		_configin,
+		_configout,
+		ram_d,
+		ram_d_OE,
+		ram_ovr_range,		
+		ram_dtack_range,		
+		ram1ce
+//		ram2ce
+	);
+`endif
 `ifdef RAM_AUTOCONFIG
 	//ram_autoconfig
 	assign ram_ovr_range=1'b0;
@@ -167,6 +188,7 @@ module ide_ram_a500(
    assign Xled = (Xled_OE) ? Xled_ZD : 1'bz;
    assign nint2_2 = (int2) ? 1'b0 : 1'bz;
    assign nint2 = (int2) ? 1'b0 : 1'bz;
+   assign _ovr3 = (ovr_range) ? 1'b0 : 1'bz;
    assign _ovr2 = (ovr_range) ? 1'b0 : 1'bz;
    assign _ovr = (ovr_range) ? 1'b0 : 1'bz;
    assign ndtack2 = (dtack) ? 1'b0 : 1'bz;

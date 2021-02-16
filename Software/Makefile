@@ -3,16 +3,16 @@ CC=vc
 #CC=vc +aos68k
 CFLAGS=-I$(NDK_INC) -DNDEBUG
 
-all: mapROM mapROM13
+all: MapROM MapROM13
 
-mapROM: mapROM.c Helpers.c
-	$(CC) +aos68k $(CFLAGS) $^ -lamiga -o mapROM
+MapROM: mapROM.c Helpers.c
+	$(CC) +aos68k $(CFLAGS) $^ -lamiga -o MapROM
 
-mapROM13: mapROM.c Helpers.c coldboot.o
-	$(CC) +kick13 $(CFLAGS) $^ -lamiga -o mapROM13
+MapROM13: mapROM.c Helpers.c coldboot.o
+	$(CC) +kick13 $(CFLAGS) $^ -lamiga -o MapROM13
 
 coldboot.o: coldboot.asm
 	vasmm68k_mot -Fhunk -I$(NDK_INCI) $^ -o coldboot.o
 
 clean:
-	rm coldboot.o mapROM mapROM13
+	rm coldboot.o MapROM MapROM13

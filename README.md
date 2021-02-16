@@ -1,14 +1,14 @@
 # IDE-RAM-A500
-This project is a 2MB autoconfig Fast SRAM and IDE port expansion for Amiga 500 and plus. I believe the two things that the A500 lacks the most are probably a hard drive, and Fast RAM.
+This is a 2MB autoconfig Fast SRAM and IDE port expansion for Amiga 500 and plus. I believe the two things that the A500 lacks the most are probably a hard drive, and Fast RAM.
 
-The project includes a second firmware, providing a 1.5MB (fast) RAM in ranger space (C00000-D7FFFF) together with 512KB MapROM. It is targeted for owners of plus or expanded rev8a who want to play old picky games from floppies.
+Using the provided Amiga software, it can be turned into a 1.5MB (fast) RAM in ranger space (C00000-D7FFFF) together with 512KB MapROM. This mode is targeted for owners of plus or expanded rev8a who want to play old picky games from floppies.
 
 Facts about this project :
 - It sits under the CPU : does not block access to the ROM and does not need a relocator.
 - I wanted a mini-IDE port, this is the main reason why I started to create my own board.
-- I thought that it would be neat to have some Fast RAM on the same PCB, and I had a great SRAM chip for another project, PCMCIA-SRAM.
+- I thought that it would be neat to have some Fast RAM on the same 2-layers PCB, and I had a great SRAM chip for another project, PCMCIA-SRAM.
 - The IDE port simulates the one from the A600 so it is bootable with appropriate Kickstarts. Like other IDE expansions, it requires two additional signals from the motherboard : INT2 and OVR.
-- By default, the RAM stuff takes the place of the first expansion in the autoconfig chain. You need to configure the firmware with config_in/out pins to put it in your autoconfig chain. These pins take the place of the secondary LED.
+- By default, the RAM stuff takes the place of the first expansion in the autoconfig chain. To use other autoconfig expansions, you need to configure the firmware with config_in/out pins to put it in your autoconfig chain ; these pins take the place of the secondary LED.
 
 # Acknowledgements
 Thanks Guys :
@@ -61,29 +61,43 @@ There are several methods to program the XC95144XL. I personally use xsvfduino :
 # Using it
 - Remove the 68000 CPU from the motherboard
 - Insert the CPU on the expansion. I personally upgraded to a 68010 to gain the quit key ability with WHDLoad
-- Plug the expansion in the motherboard. Take care of Pin 1. Push it so it does not pop out of the socket during use, but do not break the CPU socket.
+- Plug the expansion in the motherboard. Take care of Pin 1. Push it firmly so it does not pop out of the socket during use, but do not break the CPU socket.
 - Connect INT2 and OVR headers to the motherboard
 - Turn on the Amiga
 
-# mapROM
-You may use the the provided MapROM software that writes the ROM image to F80000-FFFFFF. It uses a control register at $00E9Cxxx to detect if already activated or to disable it at next reboot.
+# Amiga Software
+You may use the the provided MapROM software that writes the ROM image to F80000-FFFFFF.
+This expansion uses a control register byte at $00E9Cxxx to be configured by the software :
+- bit 7 indicates if mapROM is active, write 0 to disable it at next reboot ;
+- bit 6 is active ram mode, 0 for fast autoconfig and 1 for ranger maprom ; write it to change mode at next reboot.
+
+To activate Ranger RAM with MapROM and reboot immediately to take effect :
+```
+MapROM -1 -r
+```
 
 To map the internal ROM (might speed up the system) :
 ```
-mapROM -i
+MapROM -i
 ```
-or a different ROM from file :
+or a different ROM from file, 256K and 512K are supported :
 ```
-mapROM -f Files:path/kickstart-image-not-swapped-nor-split.rom
-```
-
-You may want to add it to your startup-sequence, the program will exit if already activated, and -r flag tells it to reboot the system :
-```
-mapROM -f Files:path/kickstart-image-not-swapped-nor-split.rom -r
+MapROM -f Files:path/kickstart-image-not-swapped-nor-split.rom
 ```
 
-You can disable it :
+You can disable MapROM :
 ```
-mapROM -x
+MapROM -x
 ```
+
+And revert to the full autoconfig RAM (take effect at next reboot) :
+```
+MapROM -0
+```
+
+To use the MapROM function more extensively, you may compile the firmware to provide MapROM by default, then add the following line to your startup-sequence. The -r flag tells it to reboot the system after successful flash, then at next reboot the program will just exit since MapROM is already activated and your system will finish to boot with the new ROM :
+```
+MapROM -f Files:path/kickstart-image-not-swapped-nor-split.rom -r
+```
+
 

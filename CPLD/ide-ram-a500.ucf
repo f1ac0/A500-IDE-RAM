@@ -68,18 +68,21 @@ NET _CS[0] LOC=P65; //94;
 NET niow LOC=P78;   //82;
 NET nior LOC=P77;   //86;
 NET ndtack LOC=P23; //23
-NET ndtack2 LOC=P17;		//24
+NET ndtack2 LOC=P17;	//24
 NET _ovr PWR_MODE=STD;
 NET _ovr FAST;
 NET _ovr LOC=P59;   //40;
 NET _ovr2 PWR_MODE=STD;
 NET _ovr2 FAST;
 NET _ovr2 LOC=P18;  //6;
+NET _ovr3 PWR_MODE=STD;
+NET _ovr3 FAST;
+NET _ovr3 LOC=P3;
 NET nint2 LOC=P60;  //35;
 NET nint2_2 LOC=P2; //8;
 NET led LOC=P52;    //33;
 NET OPTPIN_O LOC=P53;   //9;
-NET OPTPIN_I LOC=P54;    //97;
+NET OPTPIN_I LOC=P54;   //97;
 NET ram1ce LOC=P19;
 NET ram2ce LOC=P20;
 

@@ -58,9 +58,11 @@ int main(int argc, char **argv)
         printf("usage: MapROM <option> [<filename>]\n");
         printf(" -i\tmap Internal ROM\n");
         printf(" -f\tmap External ROM <filename>\n");
-        printf(" -t\ttest if active\n");
+        printf(" -t\ttest if MapRom is active\n");
         printf(" -v\tversion of current ROM\n");
         printf(" -x\tunmap ROM\n");
+        printf(" -0\tFast autoconfig mode (IDE-RAM-A500)\n");
+        printf(" -1\tRanger MapROM mode (IDE-RAM-A500)\n");
         printf(" -r\tsystem reboot\n");
         exit(RETURN_FAIL);
     }
@@ -69,6 +71,20 @@ int main(int argc, char **argv)
     {
         if(argv[1][0] == '-') switch (argv[1][1])
         {
+            case '0':
+            {
+                *controlAddress=0x80; //preserve maprom if set
+                printf("Fast autoconfig will be configured at next reboot\n");
+            }
+            break;
+
+            case '1':
+            {
+                *controlAddress=0xC0; //preserve maprom if set
+                printf("Ranger MapROM will be configured at next reboot\n");
+            }
+            break;
+
             case 'v':
             case 'V':
             {
@@ -98,8 +114,8 @@ int main(int argc, char **argv)
             case 'X':
             {
                 if( (*controlAddress) & 0x80 ) {
-                    *controlAddress=0;
-                    printf("Done, MapROM will be removed at next reboot\n");
+                    *controlAddress=(*controlAddress) & 0x40; //preserve actual mode
+                    printf("MapROM will be removed at next reboot\n");
                 } else {
                     printf("MapROM is already NOT active\n");
                     exit(RETURN_WARN);
@@ -110,7 +126,10 @@ int main(int argc, char **argv)
             case 't':
             case 'T':
             {
-                if( (*controlAddress) & 0x80 ) {
+                if( !((*controlAddress) & 0x40) ) {
+                    printf("MapROM is not available\n");
+                    exit(RETURN_ERROR);
+                } else if( (*controlAddress) & 0x80 ) {
                     printf("MapROM is ACTIVE\n");
                     exit(RETURN_WARN);
                 } else
@@ -121,8 +140,8 @@ int main(int argc, char **argv)
             case 'i':
             case 'I':
             {
-                if( (*controlAddress) & 0x80 ) {
-                    printf("MapROM is already active\n");
+                if( ((*controlAddress) & 0xC0) != 0x40 ) {
+                    printf("MapROM is already active or not available\n");
                     exit(RETURN_ERROR);
                 }
 
@@ -154,8 +173,8 @@ int main(int argc, char **argv)
             case 'f':
             case 'F':
             {
-                if( (*controlAddress) & 0x80 ) {
-                    printf("MapROM is already active\n");
+                if( ((*controlAddress) & 0xC0) != 0x40 {
+                    printf("MapROM is already active or not available\n");
                     exit(RETURN_ERROR);
                 }
 
