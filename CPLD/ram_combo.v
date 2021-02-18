@@ -23,12 +23,12 @@ module ram_combo(
 	wire mode_rangermaprom = ram_mode;
 	
 //autoconfig
-   reg configured = 1'b0;
-   reg shutup = 1'b0;
+	reg configured = 1'b0;
+	reg shutup = 1'b0;
 	reg [3:0] autoconfig_d;
 	reg [23:21] base_address;
-   wire autoconfig_access = mode_fastautoconf & (AH[23:16] == 8'hE8) & !configured & !shutup & !_configin; //accessing autoconfig space
-   wire autoconfig_read = autoconfig_access & RW;
+	wire autoconfig_access = mode_fastautoconf & (AH[23:16] == 8'hE8) & !configured & !shutup & !_configin; //accessing autoconfig space
+	wire autoconfig_read = autoconfig_access & RW;
 	wire autoconfig_write = autoconfig_access & !RW;
 	wire ram2_range = configured & (AH[23:21]==base_address[23:21]); //Lower 2MB
 
@@ -67,7 +67,6 @@ always @(negedge _UDS or negedge _RST) begin
 			default: autoconfig_d <= 4'hF;
 		endcase
 	end
-
 end
 
 //maprom

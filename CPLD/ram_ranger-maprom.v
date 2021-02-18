@@ -63,7 +63,7 @@ module ram_ranger_maprom(
 	end
 
 //response from our device
-	assign control_d[15:12] = {maprom_on, 3'b0}; //autoconfig data
+	assign control_d[15:12] = {maprom_on, 3'b100}; //config data ; bit 14 is 1 to match ranger-maprom mode
 	assign control_oe = control_read;
 	assign ramce = (ram9_range | maprom_write | maprom_read);
 	assign OVR = (ram9_range | maprom_write | maprom_read | control_access) ; //chipset override, positive logic here !
