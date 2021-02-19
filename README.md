@@ -84,8 +84,7 @@ or a different ROM from file, 256K and 512K are supported :
 ```
 MapROM -f Files:path/kickstart-image-not-swapped-nor-split.rom
 ```
-
-You can disable MapROM :
+MapROM will revert to default at next power cycle or with :
 ```
 MapROM -x
 ```
@@ -95,7 +94,7 @@ And revert to the full autoconfig RAM (take effect at next reboot) :
 MapROM -0
 ```
 
-To use the MapROM function more extensively, you may compile the firmware to provide MapROM by default, then add the following line to your startup-sequence. The -r flag tells it to reboot the system after successful flash, then at next reboot the program will just exit since MapROM is already activated and your system will finish to boot with the new ROM :
+To use the MapROM function more extensively, you may compile the firmware to provide MapROM by default, then add the following line to your startup-sequence. The -r flag tells it to reboot the system after successful flash, then at next reboot the program will just exit since MapROM is already active and your system will finish to boot with the new ROM :
 ```
 MapROM -f Files:path/kickstart-image-not-swapped-nor-split.rom -r
 ```

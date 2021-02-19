@@ -63,6 +63,8 @@ int main(int argc, char **argv)
         printf(" -x\tunmap ROM\n");
         printf(" -0\tFast autoconfig mode (IDE-RAM-A500)\n");
         printf(" -1\tRanger MapROM mode (IDE-RAM-A500)\n");
+        printf(" -4\tforce 4MB mode (A1200FaStRamExpansion)\n");
+        printf(" -8\treset 8MB mode (A1200FaStRamExpansion)\n");
         printf(" -r\tsystem reboot\n");
         exit(RETURN_FAIL);
     }
@@ -82,6 +84,20 @@ int main(int argc, char **argv)
             {
                 *controlAddress=0xC0; //preserve maprom if set
                 printf("Ranger MapROM will be configured at next reboot\n");
+            }
+            break;
+
+            case '4':
+            {
+                *controlAddress=0xA0; //preserve maprom if set
+                printf("4MB will be forced at next reboot\n");
+            }
+            break;
+
+            case '8':
+            {
+                *controlAddress=0x80; //preserve maprom if set
+                printf("8MB will be available at next reboot\n");
             }
             break;
 
