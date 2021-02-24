@@ -1,18 +1,16 @@
 CC=vc
-#CC=vc +kick13
-#CC=vc +aos68k
 CFLAGS=-I$(NDK_INC) -DNDEBUG
 
-all: MapROM MapROM13
+all: FLACOntrol FLACOntrol13 FLACOntrols
 
-MapROM: mapROM.c Helpers.c
-	$(CC) +aos68k $(CFLAGS) $^ -lamiga -o MapROM
+FLACOntrol: FLACOntrol.c Helpers.c
+	$(CC) +aos68k $(CFLAGS) $^ -lamiga -o FLACOntrol
 
-MapROM13: mapROM.c Helpers.c coldboot.o
-	$(CC) +kick13 $(CFLAGS) $^ -lamiga -o MapROM13
+FLACOntrol13: FLACOntrol.c Helpers.c coldboot.asm
+	$(CC) +kick13 $(CFLAGS) $^ -lamiga -o FLACOntrol13
 
-coldboot.o: coldboot.asm
-	vasmm68k_mot -Fhunk -I$(NDK_INCI) $^ -o coldboot.o
+FLACOntrols: FLACOntrol.c Helpers.c
+	$(CC) +aos68k $(CFLAGS) -DSILENT $^ -lamiga -o FLACOntrols
 
 clean:
-	rm coldboot.o MapROM MapROM13
+	rm FLACOntrol FLACOntrol13 FLACOntrols
