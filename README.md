@@ -15,7 +15,7 @@ Thanks Guys :
 - mkl from http://www.mkl211015.altervista.org has created both IDE and RAM expansions, ide68k and ram68k, that sit under the 68000, and can be stacked. I thank him for publishing his schematic and code since it inspired this project, and the base of the IDE CPLD code is a verilog conversion I made from his abel of version 425.
 - Sector101 shared an interesting experiment that proved it is somewhat simple to use SRAM as fast memory, and encouraged me to try adding it to this project : https://blog.sector101.co.uk/2019/07/20/amiga-500-2mb-handwired-fastram-expansion/ .
 - Sukkopera shared the OpenAmiga500FastRamExpansion from which I used the autoconfig CPLD code in earlier versions : https://github.com/SukkoPera/OpenAmiga500FastRamExpansion/
-- the MapROM software in this project is based on the one shared by Paul RASPA (PR77) https://github.com/PR77/A600_ACCEL_RAM/tree/master/Software . This is the first C code I ever compiled for my Amiga, so I believe the MapROM function would not have been possible without this working starting point !
+- the software in this project is inspired by the MapROM tool shared by Paul RASPA (PR77) https://github.com/PR77/A600_ACCEL_RAM/tree/master/Software . This is the first C code I ever compiled for my Amiga, so I believe the MapROM function was achieved thanks to this working starting point !
 
 # Disclaimer
 This is a hobbyist project, it comes with no warranty and no support. Also remember that the Amiga machines are about 30 years old and may fail because of such hardware expansions.
@@ -65,38 +65,38 @@ There are several methods to program the XC95144XL. I personally use xsvfduino :
 - Connect INT2 and OVR headers to the motherboard
 - Turn on the Amiga
 
-# Amiga Software
-You may use the the provided MapROM software that writes the ROM image to F80000-FFFFFF.
-This expansion uses a control register byte at $00E9Cxxx to be configured by the software :
-- bit 7 indicates if mapROM is active, write 0 to disable it at next reboot ;
-- bit 6 is active ram mode, 0 for fast autoconfig and 1 for ranger maprom ; write it to change mode at next reboot.
+# Amiga FLACOntrol Software
+You may use the the provided FLACOntrol software to control the board from your OS. It exists in several flavours, with classic or unix-like command line arguments, or silent with minimal text output.
 
-To activate Ranger RAM with MapROM and reboot immediately to take effect :
-```
-MapROM -1 -r
-```
+It provides a MapROM function that writes a 256K or 512K ROM image to F80000-FFFFFF.
+It also communicates with this expansion using a control register byte at $00E9Cxxx :
+- bit 7 indicates if MapROM is active, write 0 to disable it at next reboot ;
+- bit 6 is the current ram mode, 0 for Fast autoconfig and 1 for Ranger MapROM ; write it to change mode at next reboot.
 
+To activate Ranger RAM with MapROM ; this will take effect at next reboot :
+```
+FLACOntrol -1
+```
 To map the internal ROM (might speed up the system) :
 ```
-MapROM -i
+FLACOntrol -i
 ```
-or a different ROM from file, 256K and 512K are supported :
+Or a different ROM from file, 256K and 512K are supported :
 ```
-MapROM -f Files:path/kickstart-image-not-swapped-nor-split.rom
+FLACOntrol -f Files:path/kickstart-image-not-swapped-nor-split.rom
 ```
-MapROM will revert to default at next power cycle or with :
+It will revert to the hardware ROM at next power cycle or with :
 ```
-MapROM -x
+FLACOntrol -x
+```
+And revert to the full autoconfig RAM and reboot immediately to take effect :
+```
+FLACOntrol -0 -r
 ```
 
-And revert to the full autoconfig RAM (take effect at next reboot) :
+To use the MapROM function more extensively, you may compile the CPLD firmware to provide MapROM by default, then add the following line to your startup-sequence. The -r flag tells the software to reboot the system after the new ROM is loaded, then during next reboot the software will exit since MapROM is already active, and your system will finish to boot with the new ROM :
 ```
-MapROM -0
-```
-
-To use the MapROM function more extensively, you may compile the firmware to provide MapROM by default, then add the following line to your startup-sequence. The -r flag tells it to reboot the system after successful flash, then at next reboot the program will just exit since MapROM is already active and your system will finish to boot with the new ROM :
-```
-MapROM -f Files:path/kickstart-image-not-swapped-nor-split.rom -r
+FLACOntrol -f Files:path/kickstart-image-not-swapped-nor-split.rom -r
 ```
 
 

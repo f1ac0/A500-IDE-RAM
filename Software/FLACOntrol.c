@@ -1,14 +1,8 @@
-#include <clib/dos_protos.h>
-#include <clib/exec_protos.h>
-
 #include <proto/dos.h>
+#include <proto/exec.h>
 #include <exec/resident.h>
-
 #include <stdio.h>
-#include <stdlib.h>
 #include <string.h>
-
-#include "Helpers.h"
 
 /*****************************************************************************/
 /* Macros ********************************************************************/
@@ -22,8 +16,6 @@
 /*****************************************************************************/
 /* Defines *******************************************************************/
 /*****************************************************************************/
-
-#define LOOP_TIMEOUT        (ULONG)10000
 #define KICKSTART_256K      (ULONG)(256 * 1024)
 #define KICKSTART_512K      (ULONG)(512 * 1024)
 
@@ -39,8 +31,6 @@
 /* Prototypes ****************************************************************/
 /*****************************************************************************/
 
-int main(int argc, char **argv);
-
 /*****************************************************************************/
 /* Local Code ****************************************************************/
 /*****************************************************************************/
@@ -54,25 +44,23 @@ int main(int argc, char **argv)
     BPTR fileHandle = 0L;
     BYTE *controlAddress = (BYTE *)0x00E9C000;
 
-    S_PRINT("\nTool for IDE-RAM-A500/A1200FaStRamExpansion v2.0 2021.02.24\n");
-    S_PRINT("Based on MapROM by Paul Raspa (PR77) for A600_ACCEL_RAM\n");
-
     /* Check if application has been started with correct parameters */
     if (argc <= 1)
     {
-        S_PRINT("usage: %s <option> [<filename>]\n",argv[0]);
-        S_PRINT(" -i\tmap Internal ROM\n");
-        S_PRINT(" -f\tmap External ROM <filename>\n");
-        S_PRINT(" -t\ttest if MapRom is active\n");
-        S_PRINT(" -v\tversion of current ROM\n");
-        S_PRINT(" -x\tunmap ROM\n");
-        S_PRINT(" -0\tFast autoconfig mode (IDE-RAM-A500)\n");
-        S_PRINT(" -1\tRanger MapROM mode (IDE-RAM-A500)\n");
-        S_PRINT(" -4\tforce 4MB mode (A1200FaStRamExpansion)\n");
-        S_PRINT(" -8\treset 8MB mode (A1200FaStRamExpansion)\n");
-        S_PRINT(" -m\tadd Ranger Mem (A1200FaStRamExpansion)\n");
-        S_PRINT(" -r\tsystem reboot\n");
-        exit(RETURN_WARN);
+        printf("\nTool for IDE-RAM-A500/A1200FaStRamExpansion v1.0 2021.02.25\n");
+        printf("usage: %s <option> [<filename>]\n",argv[0]);
+        printf(" -i\tmap Internal ROM\n");
+        printf(" -f\tmap External ROM <filename>\n");
+        printf(" -t\ttest if MapRom is active\n");
+        printf(" -v\tversion of current ROM\n");
+        printf(" -x\tunmap ROM\n");
+        printf(" -0\tFast autoconfig mode (IDE-RAM-A500)\n");
+        printf(" -1\tRanger MapROM mode (IDE-RAM-A500)\n");
+        printf(" -4\tforce 4MB mode (A1200FaStRamExpansion)\n");
+        printf(" -8\treset 8MB mode (A1200FaStRamExpansion)\n");
+        printf(" -m\tadd Ranger Mem (A1200FaStRamExpansion)\n");
+        printf(" -r\tsystem reboot\n");
+        return(RETURN_WARN);
     }
         
     while (argc > 1)
@@ -82,8 +70,8 @@ int main(int argc, char **argv)
             case 'm':
             case 'M':
             {
-                if(!TypeOfMem(0x00C01000)) { //test if already present in pool
-                    AddMemList((1024+512)*1024, MEMF_FAST|MEMF_PUBLIC, -5, 0x00C00000, "ranger memory"); //size, attributes, pri, base, name);
+                if(!TypeOfMem((UWORD *)0x00C01000)) { //test if already present in pool
+                    AddMemList((1024+512)*1024, MEMF_FAST|MEMF_PUBLIC, -5, (UWORD *)0x00C00000, "ranger memory"); //size, attributes, pri, base, name);
                     S_PRINT("Ranger Mem added\n");
                 }
             }
@@ -122,14 +110,12 @@ int main(int argc, char **argv)
             {
                 struct Resident *myResident;
                 myResident = FindResident("exec.library");
-    
                 if (!myResident)
                 {
                     printf("exec.library not found, is this even an Amiga?!?\n");
-                    exit(RETURN_FAIL);
+                    return(RETURN_FAIL);
                 }
-
-                printf("\nFound Resident ROMTAG:\n");
+                printf("Found Resident ROMTAG:\n");
                 printf("Name: %s\n", myResident->rt_Name);
                 printf("ID String: %s\n", myResident->rt_IdString);
             }
@@ -150,7 +136,7 @@ int main(int argc, char **argv)
                     S_PRINT("MapROM will be removed at next reboot\n");
                 } else {
                     S_PRINT("MapROM is already NOT active\n");
-                    exit(RETURN_WARN);
+                    return(RETURN_WARN);
                 }
             }
             break;
@@ -160,10 +146,10 @@ int main(int argc, char **argv)
             {
                 if( !((*controlAddress) & 0x40) ) {
                     S_PRINT("MapROM is not available\n");
-                    exit(RETURN_ERROR);
+                    return(RETURN_ERROR);
                 } else if( (*controlAddress) & 0x80 ) {
                     S_PRINT("MapROM is ACTIVE\n");
-                    exit(RETURN_WARN);
+                    return(RETURN_WARN);
                 } else
                     S_PRINT("MapROM is NOT active\n");
             }
@@ -174,33 +160,30 @@ int main(int argc, char **argv)
             {
                 if( ((*controlAddress) & 0xC0) != 0x40 ) {
                     S_PRINT("MapROM is already active or not available\n");
-                    exit(RETURN_ERROR);
+                    return(RETURN_ERROR);
                 }
-
-                APTR sourceAddress, destinationAddress;
-                ULONG writeWordCounter = 0;
-                UBYTE progressIndicator = 0;
-                
-                sourceAddress = (ULONG)0x00F80000;
-                destinationAddress = (ULONG)0x00F80000;
-                
-                S_PRINT("Writing MapROM ... SRC: 0x%X, DEST: 0x%X\n\n", sourceAddress, destinationAddress);
-                
+                UWORD *sourceAddress = (UWORD *)0x00F80000;
+                UWORD *destinationAddress = (UWORD *)0x00F80000;
+                ULONG writeWordCounter = 0;            
+#ifndef SILENT
+                S_PRINT("Writing MapROM... SRC: $%lX, DEST: $%lX\n", (ULONG)sourceAddress, (ULONG)destinationAddress);
+                S_PRINT("[%*s]\r[",64,""); //progress bar with 64 steps
+                fflush(stdout); //print progress immediately
+#endif
                 do {
-                    ((UWORD *)destinationAddress)[writeWordCounter] = ((UWORD *)sourceAddress)[writeWordCounter];
+                    destinationAddress[writeWordCounter] = sourceAddress[writeWordCounter];
                     writeWordCounter++;
                     
 #ifndef SILENT
                     if ((writeWordCounter % 4096) == 0)
                     {
-                        progressIndicator++;
-                        printProgress(progressIndicator, 64);
+                        printf("#");
+                        fflush(stdout);
                     }
 #endif
-
                 } while (writeWordCounter < (KICKSTART_512K / 2));
                 
-                S_PRINT("Done, MapROM will be active at next reboot\n");
+                S_PRINT("\nDone, MapROM will be active at next reboot\n");
             }
             break;
             
@@ -209,91 +192,78 @@ int main(int argc, char **argv)
             {
                 if( ((*controlAddress) & 0xC0) != 0x40 ) {
                     S_PRINT("MapROM is already active or not available\n");
-                    exit(RETURN_ERROR);
+                    return(RETURN_ERROR);
                 }
+                int result = RETURN_ERROR;
 
                 if ((argc > 2) && argv[2])
                 {
-                    APTR pBuffer;
+                    char *fileName = argv[2];
                     ULONG fileSize;
-                    
-                    tReadFileHandler readFileProgram = getFileSize(argv[2], &fileSize);
-                    
-                    if (readFileOK == readFileProgram)
+                    static BPTR fileHandle;
+                    static APTR memoryHandle;
+                    struct FileInfoBlock FIB;
+
+                    fileHandle = Lock(fileName, MODE_OLDFILE);
+                    if (0L != fileHandle)
                     {
+                        Examine(fileHandle, &FIB);
+                        UnLock(fileHandle);
+                        fileSize = (ULONG)FIB.fib_Size;
                         if (fileSize == KICKSTART_512K || fileSize == KICKSTART_256K)
                         {
-                            readFileProgram = readFileIntoMemoryHandler(argv[2], fileSize, &pBuffer);
-                            
-                            if (readFileOK == readFileProgram)
+                            fileHandle = Open(fileName, MODE_OLDFILE);
+                            if (0L != fileHandle)
                             {
-                                APTR destinationAddress;
-                                ULONG writeWordCounter = 0;
-                                UBYTE progressIndicator = 0;
-
-                                destinationAddress = (ULONG)0x00F80000;
-
-                                S_PRINT("Writing MapROM ... SRC: %s, DEST: 0x%X\n\n", argv[2], destinationAddress);
-
-                                do {
-                                    ((UWORD *)destinationAddress)[writeWordCounter] = ((UWORD *)pBuffer)[writeWordCounter];
-                                    if(fileSize == KICKSTART_256K)
-                                        ((UWORD *)destinationAddress)[writeWordCounter+(KICKSTART_256K/2)] = ((UWORD *)pBuffer)[writeWordCounter];
-
-                                    writeWordCounter++;
-
-#ifndef SILENT
-                                    if ((writeWordCounter % 4096) == 0)
+                                memoryHandle = AllocMem(fileSize, 0);
+                                if (memoryHandle)
+                                {
+                                    if (fileSize == (ULONG)Read(fileHandle, memoryHandle, fileSize))
                                     {
-                                        progressIndicator++;
-                                        printProgress(progressIndicator, 64);
-                                    }
+                                        UWORD *destinationAddress = (UWORD *)0x00F80000;
+                                        ULONG writeWordCounter = 0;
+#ifndef SILENT
+                                        S_PRINT("Writing MapROM... SRC: %s, DEST: $%lX\n", fileName, (ULONG)destinationAddress);
+                                        S_PRINT("[%*s]\r[",(UWORD)(fileSize>>13),""); //progress bar with 64 or 32 steps
+                                        fflush(stdout); //print progress immediately
 #endif
-
-                                } while (writeWordCounter < (fileSize / 2));   
-
-                                S_PRINT("Done, MapROM will be active at next reboot\n");
-                                freeFileHandler(fileSize);                            
+                                        do {
+                                            destinationAddress[writeWordCounter] = ((UWORD *)memoryHandle)[writeWordCounter];
+                                            if(fileSize == KICKSTART_256K)
+                                                destinationAddress[writeWordCounter+(KICKSTART_256K/2)] = ((UWORD *)memoryHandle)[writeWordCounter];
+                                            writeWordCounter++;
+#ifndef SILENT
+                                            if ((writeWordCounter % 4096) == 0)
+                                            {
+                                                printf("#");
+                                                fflush(stdout);
+                                            }
+#endif
+                                        } while (writeWordCounter < (fileSize / 2));   
+                                        S_PRINT("\nDone, MapROM will be active at next reboot\n");
+                                        result = RETURN_OK;
+                                    }else{
+                                        S_PRINT("Failed to read file: %s\n", fileName);
+                                    }
+                                    FreeMem(memoryHandle, fileSize);
+                                }else{
+                                    S_PRINT("Failed to allocate %lu memory for file: %s\n", fileSize, fileName);
+                                }
+                                Close(fileHandle);
+                            }else{
+                                S_PRINT("Failed to open file: %s\n", fileName);
                             }
-                            else if (readFileNoMemoryAllocated == readFileProgram)
-                            {
-                                S_PRINT("Failed to allocate %ld memory for file: %s\n", fileSize, argv[2]);
-                                exit(RETURN_FAIL);
-                            }
-                            else if (readFileGeneralError == readFileProgram)
-                            {
-                                S_PRINT("Failed to read file: %s\n", argv[2]);    
-                                exit(RETURN_FAIL);
-                            }
-                            else
-                            {
-                                S_PRINT("Unhandled error in readFileIntoMemoryHandler()\n");    
-                                exit(RETURN_FAIL);
-                            }
+                        }else{
+                            S_PRINT("Unsupported Kickstart size %lu. Expecting 256/512KB images\n", fileSize);
                         }
-                        else
-                        {
-                            S_PRINT("Unsupported Kickstart size %ld. Expecting 256/512KB images\n", fileSize);
-                            freeFileHandler(fileSize);                            
-                            exit(RETURN_FAIL);
-                        }
-
+                    }else{
+                        S_PRINT("Unable to determine size of file: %s\n", fileName);
                     }
-                    else if (readFileNotFound == readFileProgram)
-                    {
-                        S_PRINT("Failed to find file: %s\n", argv[2]);
-                        exit(RETURN_FAIL);
-                    }
-                    else
-                    {
-                        S_PRINT("Unable to determine size of file: %s\n", argv[2]);
-                        exit(RETURN_FAIL);
-                    }
+                }else{
+                    S_PRINT("Incorrect file name\n");
                 }
-                else
-                {
-                    S_PRINT("No Kickstart image specified\n");
-                    exit(RETURN_FAIL);
+                if(result){
+                    return(result);
                 }
             }
             break;
