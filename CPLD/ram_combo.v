@@ -109,6 +109,6 @@ end
 	assign ram1ce = ram2_range | ram9_range | maprom_write | maprom_read; //Lower 2MB
 //	assign ram2ce = 1'b0; //configured & (AH[23:21]==3'b010); //Upper 2MB chip
 	assign OVR = (ram9_range | maprom_write | maprom_read | control_access); //chipset override, positive logic here !
-	assign DTACK = autoconfig_access | ram1ce; // | ram2ce;
+	assign DTACK = autoconfig_access | control_access | ram1ce; // | ram2ce;
 
 endmodule

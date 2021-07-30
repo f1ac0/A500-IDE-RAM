@@ -1,3 +1,6 @@
+// first RAM autoconfig code adapted from Sukkopera
+// https://github.com/SukkoPera/OpenAmiga500FastRamExpansion
+// OpenAmiga500FastRamExpansion is CERN OHL 1.2
 
 module ram_autoconfig_original(
 	input [23:16] AH,
