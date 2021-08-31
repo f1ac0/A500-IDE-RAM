@@ -1,7 +1,7 @@
 # IDE-RAM-A500
-This is a 2MB autoconfig Fast SRAM and IDE port expansion for Amiga 500 and plus. I believe the two things that the A500 lacks the most are probably a hard drive, and Fast RAM.
+This is an expansion for Amiga 500 and plus providing 2MB Fast SRAM and one IDE port. I believe the two things that the A500 lacks the most are probably a hard drive, and Fast RAM.
 
-Using the provided Amiga software, it can be turned into a 1.5MB (fast) RAM in ranger space (C00000-D7FFFF) together with 512KB MapROM. This mode is targeted for owners of plus or expanded rev8a who want to play old picky games from floppies.
+The RAM is configured by default as 2MB Fast autoconfig (in the 200000-9FFFFF space), and it can be turned into a 1.5MB (fast) RAM in ranger space (C00000-D7FFFF) together with 512KB MapROM. This mode is targeted for owners of plus or expanded rev8a who want to play old picky games from floppies. The modes and maprom can be configured by maintaining the reset from 3 to 10s or by using the provided Amiga software.
 
 Facts about this project :
 - It sits under the CPU : does not block access to the ROM and does not need a relocator.
@@ -64,6 +64,11 @@ There are several methods to program the XC95144XL. I personally use xsvfduino :
 - Plug the expansion in the motherboard. Take care of Pin 1. Push it firmly so it does not pop out of the socket during use, but do not break the CPU socket.
 - Connect INT2 and OVR headers to the motherboard
 - Turn on the Amiga
+
+Maintaining the reset for a few seconds will allow you to :
+- 3s : disable MapROM for the next reboot
+- 6s : turn off MapROM
+- 10s : toggle the ram mode
 
 # Amiga FLACOntrol Software
 You may use the the provided FLACOntrol software to control the board from your OS. It exists in several flavours, with classic or unix-like command line arguments, or silent with minimal text output.

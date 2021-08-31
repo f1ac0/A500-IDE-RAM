@@ -74,6 +74,7 @@ module ide_ram_a500(
 		AL[6:1],
 		D[15:13],
 		_RESET,
+		CLK,
 		_UDS,
 		R_W,
 		_configin,

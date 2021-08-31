@@ -4,6 +4,7 @@ module ram_combo(
 	input [6:1] AL,
 	input [15:13] D_i,
 	input _RST,
+	input CLK,
 	input _UDS,
 	input RW,
 	input _configin,
@@ -74,8 +75,21 @@ end
 	reg maprom_on = 1'b0;
 	wire ram9_range = mode_rangermaprom & ( AH[23:20]==4'b1100 | AH[23:19]==5'b11010 ); //C00000-D7FFFF, 1.5M
 	wire rom9_range = mode_rangermaprom & ( AH[23:19]==5'b11111 ); //F80000-FFFFFF, .5M
-	wire maprom_write = rom9_range & !RW;
+	wire maprom_write = rom9_range & !RW & !maprom_on; //write protect when active
 	wire maprom_read = rom9_range & maprom_on;
+
+//maprom reset timer
+	reg [26:0] rst_timer;
+	wire rst_3s= rst_timer[24] & rst_timer[22];
+	wire rst_6s= rst_timer[25] & rst_timer[23];
+	wire rst_10s= rst_timer[26];
+	always @(posedge CLK)
+	begin
+		if(_RST)
+			rst_timer <= 27'b0;
+		else
+			rst_timer <= rst_timer+1;
+	end
 
 //control register
 	wire control_access = AH[23:12] == 12'hE9C;
@@ -84,12 +98,25 @@ end
 	wire [3:0] control_d = {maprom_on, ram_mode, &(maprom_written), ram_mode_select}; //2'b0};
 
 //control commands and mode/maprom activation
-	always @(negedge _UDS)
+	// ram_mode select = write in control or toggle when 10s reset
+	wire ram_mode_set = !_UDS & control_write | rst_10s;
+	always @(posedge ram_mode_set)
 	begin
-		if( control_write ) begin // reset - write in control
-			if(!D_i[15])
-				maprom_written <= 2'b0;
+		if( control_write )
 			ram_mode_select <= D_i[14];
+		else
+			ram_mode_select <= !ram_mode_select;
+	end
+	//ram_mode set at reset
+	always @(posedge _RST)
+		ram_mode <= ram_mode_select;
+	// maprom set = when ROM written
+	// maprom reset = write in control or 6s reset
+	wire maprom_rst = !_UDS & control_write & !D_i[15] | rst_6s;
+	always @(negedge _UDS or posedge maprom_rst)
+	begin
+		if(maprom_rst) begin
+			maprom_written <= 2'b0;
 		end else	begin
 			if( maprom_write ) begin // maprom write
 				if(~&(maprom_written)) //sample multiple writes otherwise false positives during power up
@@ -97,9 +124,13 @@ end
 			end
 		end
 	end
-	always @(negedge _RST) begin
-		ram_mode <= ram_mode_select;
-		maprom_on <= ram_mode_select & &(maprom_written);
+	//maprom activate at reset
+	//maprom deactivate at 3s reset
+	always @(negedge _RST or posedge rst_3s) begin
+		if(rst_3s)
+			maprom_on <= 0;
+		else
+			maprom_on <= ram_mode_select & &(maprom_written);
 	end
 
 //response from our device
