@@ -253,15 +253,15 @@ int main(int argc, char **argv)
 
         if (result[OPT_Help])
         {
-            printf("Tool for IDE-RAM-A500/A1200FaStRamExpansion v1.0 2021.02.25\n");
+            printf("Tool for A500-IDE-RAM/A1200FaStRamExpansion v1.0 2021.02.25\n");
             printf("usage: FLACOntrol <options> [<filename>]\n");
             printf("\tI map Internal ROM\n");
             printf("\tF map External ROM <filename>\n");
             printf("\tT test if MapRom is active\n");
             printf("\tV version of current ROM\n");
             printf("\tX unmap ROM\n");
-            printf("\t0 Fast autoconfig mode (IDE-RAM-A500)\n");
-            printf("\t1 Ranger MapROM mode (IDE-RAM-A500)\n");
+            printf("\t0 Fast autoconfig mode (A500-IDE-RAM)\n");
+            printf("\t1 Ranger MapROM mode (A500-IDE-RAM)\n");
             printf("\t4 force 4MB mode (A1200FaStRamExpansion)\n");
             printf("\t8 reset 8MB mode (A1200FaStRamExpansion)\n");
             printf("\tM add Ranger Mem (A1200FaStRamExpansion)\n");

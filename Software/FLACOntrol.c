@@ -47,15 +47,15 @@ int main(int argc, char **argv)
     /* Check if application has been started with correct parameters */
     if (argc <= 1)
     {
-        printf("\nTool for IDE-RAM-A500/A1200FaStRamExpansion v1.0 2021.02.25\n");
+        printf("\nTool for A500-IDE-RAM/A1200FaStRamExpansion v1.0 2021.02.25\n");
         printf("usage: %s <option> [<filename>]\n",argv[0]);
         printf(" -i\tmap Internal ROM\n");
         printf(" -f\tmap External ROM <filename>\n");
         printf(" -t\ttest if MapRom is active\n");
         printf(" -v\tversion of current ROM\n");
         printf(" -x\tunmap ROM\n");
-        printf(" -0\tFast autoconfig mode (IDE-RAM-A500)\n");
-        printf(" -1\tRanger MapROM mode (IDE-RAM-A500)\n");
+        printf(" -0\tFast autoconfig mode (A500-IDE-RAM)\n");
+        printf(" -1\tRanger MapROM mode (A500-IDE-RAM)\n");
         printf(" -4\tforce 4MB mode (A1200FaStRamExpansion)\n");
         printf(" -8\treset 8MB mode (A1200FaStRamExpansion)\n");
         printf(" -m\tadd Ranger Mem (A1200FaStRamExpansion)\n");

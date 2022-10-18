@@ -13,7 +13,7 @@
 `define OPTPIN_LED 1
 //`define OPTPIN_CONFIG 1
 
-module ide_ram_a500(
+module a500_ide_ram(
 //68000 bus
 	input _AS,
 	input R_W,

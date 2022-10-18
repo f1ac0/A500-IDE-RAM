@@ -1,4 +1,4 @@
-# IDE-RAM-A500
+# A500-IDE-RAM
 This is an expansion for Amiga 500 and plus providing 2MB Fast SRAM and one IDE port. I believe the two things that the A500 lacks the most are probably a hard drive, and Fast RAM.
 
 The RAM is configured by default as 2MB Fast autoconfig (in the 200000-9FFFFF space), and it can be turned into a 1.5MB (fast) RAM in ranger space (C00000-D7FFFF) together with 512KB MapROM. This mode is targeted for owners of plus or expanded rev8a who want to play old picky games from floppies. The modes and maprom can be configured by maintaining the reset from 3 to 10s or by using the provided Amiga software.
@@ -38,7 +38,7 @@ If you find it useful and want to reward my hard work : I am always looking for 
 - 2x 4k7 0805 resistors
 - 1x BAT54A (or equivalent) diodes
 - 64x rounded socket pins, for CPU pass-through connection. I use pins taken from a socket header.
-- 1x 2x22 2.0mm pin header. Remove pin 20 which is a key.
+- 1x 2x22 2.0mm pin header. Remove pin 20 which is IDE key.
 - 2x wires for INT2 and OVR signals
 - optional : 1x LED and resistor (330 ohm 0805 for example)
 
@@ -71,7 +71,7 @@ Maintaining the reset for a few seconds will allow you to :
 - 10s : toggle the ram mode
 
 # Amiga FLACOntrol Software
-You may use the the provided FLACOntrol software to control the board from your OS. It exists in several flavours, with classic or unix-like command line arguments, or silent with minimal text output.
+You may use the provided FLACOntrol software to control the board from your OS. It exists in several flavours, with classic or unix-like command line arguments, or silent with minimal text output.
 
 It provides a MapROM function that writes a 256K or 512K ROM image to F80000-FFFFFF.
 It also communicates with this expansion using a control register byte at $00E9Cxxx :
