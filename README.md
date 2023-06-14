@@ -9,6 +9,7 @@ Facts about this project :
 - I thought that it would be neat to have some Fast RAM on the same 2-layers PCB, and I had a great SRAM chip for another project, PCMCIA-SRAM.
 - The IDE port simulates the one from the A600 so it is bootable with appropriate Kickstarts. Like other IDE expansions, it requires two additional signals from the motherboard : INT2 and OVR.
 - By default, the RAM stuff takes the place of the first expansion in the autoconfig chain. To use other autoconfig expansions, you need to configure the firmware with config_in/out pins to put it in your autoconfig chain ; these pins take the place of the secondary LED.
+- Version 0.3 of the board adds a "clockport" to connect compatible expansions. Its "SPARE_CS" is at address D8xxxx.
 
 # Acknowledgements
 Thanks Guys :
@@ -63,6 +64,7 @@ There are several methods to program the XC95144XL. I personally use xsvfduino :
 - Insert the CPU on the expansion. I personally upgraded to a 68010 to gain the quit key ability with WHDLoad
 - Plug the expansion in the motherboard. Take care of Pin 1. Push it firmly so it does not pop out of the socket during use, but do not break the CPU socket.
 - Connect INT2 and OVR headers to the motherboard
+- Connect INT6 on the v0.3 board to use the clockport expansions that need it
 - Turn on the Amiga
 
 Maintaining the reset for a few seconds will allow you to :
