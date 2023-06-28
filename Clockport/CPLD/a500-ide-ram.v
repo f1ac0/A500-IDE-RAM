@@ -68,7 +68,7 @@ module a500_ide_ram(
 
 //CLOCKPORT
 	wire _clockport_cs;
-	wire clk_ovr_range = !_clockport_cs;
+	wire clk_range = !_clockport_cs;
 	wire clk_d0_oe;
 	wire clk_dd8_oe;
 `ifdef CLOCKPORT
@@ -222,10 +222,10 @@ module a500_ide_ram(
 	);
 
 	assign _INT2 = (!ide_int2) ? 1'b0 : 1'bz;
-	assign _OVR2 = (iderange | ram_ovr_range | clk_ovr_range) ? 1'b0 : 1'bz;
-	assign _OVR = (iderange | ram_ovr_range | clk_ovr_range) ? 1'b0 : 1'bz;
-	assign _DTACK2 = (!_AS & (iderange | ram_dtack_range)) ? 1'b0 : 1'bz;
-	assign _DTACK = (!_AS & (iderange | ram_dtack_range)) ? 1'b0 : 1'bz;
+	assign _OVR2 = (iderange | ram_ovr_range | clk_range) ? 1'b0 : 1'bz;
+	assign _OVR = (iderange | ram_ovr_range | clk_range) ? 1'b0 : 1'bz;
+	assign _DTACK2 = (!_AS & (iderange | ram_dtack_range | clk_range)) ? 1'b0 : 1'bz;
+	assign _DTACK = (!_AS & (iderange | ram_dtack_range | clk_range)) ? 1'b0 : 1'bz;
 	assign DD[15:8] = (ide_dd8_oe) ? ide_dd[15:8] : (clk_dd8_oe ? D[7:0] : 8'bz);
 	assign DD[7:0] = (ide_dd0_oe) ? ide_dd[7:0] : 8'bz;
 	assign D[15:12] = (ide_d8_oe) ? ide_d[15:12] : (ram_d_OE ? ram_d[15:12] : 4'bz);
