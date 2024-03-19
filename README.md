@@ -9,6 +9,7 @@ Facts about this project :
 - I thought that it would be neat to have some Fast RAM on the same 2-layers PCB, and I had a great SRAM chip for another project, PCMCIA-SRAM.
 - The IDE port simulates the one from the A600 so it is bootable with appropriate Kickstarts. Like other IDE expansions, it requires two additional signals from the motherboard : INT2 and OVR.
 - By default, the RAM stuff takes the place of the first expansion in the autoconfig chain. To use other autoconfig expansions, you need to configure the firmware with config_in/out pins to put it in your autoconfig chain ; these pins take the place of the secondary LED.
+- Version 0.3 of the board adds a "clockport" to connect compatible expansions. Its "SPARE_CS" is at address D8xxxx. It is untested at the time of writing
 
 # Acknowledgements
 Thanks Guys :
@@ -22,7 +23,7 @@ This is a hobbyist project, it comes with no warranty and no support. Also remem
 
 I publish my work under the CC-BY-NC-SA license. The content of this repository is the result of weeks of work, requiring investment in tools, parts, prototypes, and risky tests on his own equipment. For this reason the author does not want third parties to sell products and keep all the profit, usually without even offering support to their customers. If you see people selling this without the consent of the author, don't buy from them.
 
-If you find it useful and want to reward me : I am always looking for Amiga/Amstrad CPC hardware to repair and hack, please contact me.
+If you find it useful and want to reward my hard work : I am always looking for Amiga/Amstrad CPC hardware to repair and hack, please contact me.
 
 # BOM
 - 1x XC95144XL CPLD
@@ -47,13 +48,21 @@ Check for shorts at least between 5V, 3.3V, and GND traces before applying power
 
 The programming port does not need to be soldered since it needs to be programmed just once : you can just hold it in place during the few seconds required for programming.
 
-There are several methods to program the XC95144XL. I personally use xsvfduino : https://github.com/wschutzer/xsvfduino. I advise you program it when unplugged from the motherboard, or by powering it from the motherboard ; otherwise your programmer might burn trying to power the whole system.
+CPLD code is generated and built into xsvf using Xilinx ISE 14.7 IDE then iMPACT. There are configuration defines for RAM type and LED/config_pins selection, choose the ones you need. The "Process Properties" of the Fitting step are tweaked :
+- -slew = Slow
+- -power = Low
+- -nogclkopt = Checked (by default)
+- -nogsropt = Checked (by default)
+- -unused = NOT Checked (by default), since pin 4 is used as pass-through
+
+There are several methods to program the XC95144XL, I personally use xsvfduino. I advise you program it when unplugged from the motherboard, otherwise make sure to power it from the motherboard and not your programmer or it might burn trying to power the whole system.
 
 # Using it
 - Remove the 68000 CPU from the motherboard
 - Insert the CPU on the expansion. I personally upgraded to a 68010 to gain the quit key ability with WHDLoad
 - Plug the expansion in the motherboard. Take care of Pin 1. Push it firmly so it does not pop out of the socket during use, but do not break the CPU socket.
 - Connect INT2 and OVR headers to the motherboard
+- On the v0.3 board, connect INT6 to use the clockport expansions that need it
 - Turn on the Amiga
 
 Maintaining the reset for a few seconds will allow you to :
